@@ -1,4 +1,5 @@
 <?php
+
 session_start(); require 'config/db.php'; require 'includes/functions.php'; require_login(); ensure_portal_schema($pdo); ensure_warehouse_schema($pdo);
 $title='Produktet'; $subtitle=''; $action=$_GET['action']??'list';
 if($_SERVER['REQUEST_METHOD']==='POST'){
