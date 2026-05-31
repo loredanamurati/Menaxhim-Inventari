@@ -1,0 +1,6 @@
+<?php
+session_start(); require 'config/db.php'; require 'includes/functions.php'; ensure_portal_schema($pdo); if(empty($_SESSION['client'])) redirect('client_login.php');
+$client=$_SESSION['client']; $st=$pdo->prepare("SELECT p.*, po.totali, po.statusi FROM Pagesat p JOIN Porosite po ON po.porosi_id=p.porosi_id WHERE po.klient_id=? ORDER BY p.pagese_id DESC"); try{$st->execute([(int)$client['klient_id']]); $payments=$st->fetchAll();}catch(Exception $e){$payments=[];}
+$portalRole='client'; $portalUser=$client; $pageTitle='Histori pagesash'; include 'includes/portal_header.php'; ?>
+<section class="page-title-card"><div><span class="eyebrow">Pagesa</span><h1>Histori pagesash</h1></div><a class="btn primary" href="client_orders.php">Porositë</a></section>
+<div class="card"><div class="table-wrap"><table><tr><th>Data</th><th>ID pagese</th><th>Porosia</th><th>Shuma</th><th>Mënyra</th></tr><?php foreach($payments as $p): ?><tr><td><?=e($p['data_pageses'] ?? '')?></td><td><?=e($p['paypal_payment_id'] ?? '-')?></td><td>#<?=e($p['porosi_id'])?></td><td><?=money($p['shuma'] ?? $p['totali'])?></td><td><?=e($p['menyra'] ?? 'Online')?></td></tr><?php endforeach; if(!$payments): ?><tr><td colspan="5" class="empty-state">Nuk ka pagesa të regjistruara.</td></tr><?php endif; ?></table></div></div><?php include 'includes/portal_footer.php'; ?>

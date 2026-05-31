@@ -1,0 +1,6 @@
+<?php
+session_start(); require 'config/db.php'; require 'includes/functions.php'; if(empty($_SESSION['supplier'])) redirect('supplier_login.php'); $supplier=$_SESSION['supplier']; $sid=(int)$supplier['furnizues_id'];
+try{ $st=$pdo->prepare('SELECT s.*, p.emri produkt FROM SupplierSales s LEFT JOIN Produktet p ON p.produkt_id=s.produkt_id WHERE s.furnizues_id=? ORDER BY s.data_krijimit DESC'); $st->execute([$sid]); $rows=$st->fetchAll(); }catch(Exception $e){$rows=[];}
+$portalRole='supplier'; $portalUser=$supplier; $pageTitle='Pagesa të marra'; include 'includes/portal_header.php'; ?>
+<section class="page-title-card"><div><span class="eyebrow">Pagesa</span><h1>Pagesa të marra</h1></div><a class="btn primary" href="supplier_sell.php">Furnizo mall</a></section>
+<div class="card"><div class="table-wrap"><table><tr><th>Data</th><th>Produkt</th><th>Sasia</th><th>Totali</th><th>Status</th></tr><?php foreach($rows as $r): ?><tr><td><?=e($r['data_krijimit'])?></td><td><?=e($r['produkt'])?></td><td><?=e($r['sasia'])?></td><td><?=money($r['cmimi_total'])?></td><td><span class="badge ok"><?=e($r['statusi'])?></span></td></tr><?php endforeach; if(!$rows): ?><tr><td colspan="5" class="empty-state">Nuk ka pagesa të regjistruara.</td></tr><?php endif; ?></table></div></div><?php include 'includes/portal_footer.php'; ?>

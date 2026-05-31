@@ -1,0 +1,6 @@
+<?php
+session_start(); require 'config/db.php'; require 'includes/functions.php'; if(empty($_SESSION['supplier'])) redirect('supplier_login.php'); $supplier=$_SESSION['supplier']; $sid=(int)$supplier['furnizues_id'];
+$st=$pdo->prepare('SELECT * FROM Produktet WHERE furnizues_id=? AND sasia_ne_stok<=stok_minimal ORDER BY (stok_minimal-sasia_ne_stok) DESC'); $st->execute([$sid]); $rows=$st->fetchAll();
+$portalRole='supplier'; $portalUser=$supplier; $pageTitle='Stok i kërkuar'; include 'includes/portal_header.php'; ?>
+<section class="page-title-card"><div><span class="eyebrow">Kërkesa</span><h1>Stok i kërkuar nga admini</h1></div><a class="btn primary" href="supplier_sell.php">Furnizo tani</a></section>
+<div class="wishlist-grid"><?php foreach($rows as $r): $need=max(1,(int)$r['stok_minimal']-(int)$r['sasia_ne_stok']+10); ?><div class="card request-card"><h2><?=e($r['emri'])?></h2><p class="muted">Stok aktual: <?=e($r['sasia_ne_stok'])?> · minimumi: <?=e($r['stok_minimal'])?></p><div class="big-number">+<?=$need?> copë</div><a class="btn primary" href="supplier_sell.php?product=<?=$r['produkt_id']?>">Furnizo</a></div><?php endforeach; if(!$rows): ?><div class="card"><p class="muted">Nuk ka kërkesa aktive për stok.</p></div><?php endif; ?></div><?php include 'includes/portal_footer.php'; ?>

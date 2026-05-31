@@ -1,0 +1,10 @@
+<?php
+session_start(); require 'config/db.php'; require 'includes/functions.php'; require 'config/paypal.php'; if(defined('PAYPAL_ENABLED') && PAYPAL_ENABLED!=='1'){ die('PayPal nuk është aktivizuar nga administratori.'); } ensure_portal_schema($pdo);
+if(empty($_SESSION['client'])) redirect('client_login.php');
+$order_id=(int)($_GET['order_id']??0); $st=$pdo->prepare('SELECT p.*, k.emri klient FROM Porosite p LEFT JOIN Klientet k ON k.klient_id=p.klient_id WHERE p.porosi_id=? AND p.klient_id=?'); $st->execute([$order_id,$_SESSION['client']['klient_id']]); $order=$st->fetch(); if(!$order) redirect('client_shop.php');
+$items=$pdo->prepare('SELECT d.*, pr.emri, pr.sasia_ne_stok FROM DetajetPorosise d JOIN Produktet pr ON pr.produkt_id=d.produkt_id WHERE d.porosi_id=?'); $items->execute([$order_id]); $items=$items->fetchAll();
+?>
+<!doctype html><html lang="sq"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>PayPal</title><link rel="stylesheet" href="assets/style.css"><script src="https://www.paypal.com/sdk/js?client-id=<?=e(PAYPAL_CLIENT_ID)?>&currency=<?=e(PAYPAL_CURRENCY)?>"></script></head><body class="login-page"><div class="checkout-card"><h1>Pagesë me PayPal</h1><p>Porosia #<?=e($order_id)?> · Totali: <b><?=money($order['totali'])?></b></p><table><tr><th>Produkt</th><th>Sasi</th><th>Çmim</th></tr><?php foreach($items as $it):?><tr><td><?=e($it['emri'])?></td><td><?=e($it['sasia'])?></td><td><?=money($it['cmimi'])?></td></tr><?php endforeach;?></table><div id="paypal-button-container"></div><a href="client_shop.php" class="btn secondary">Kthehu</a></div>
+<script>
+paypal.Buttons({createOrder:function(data,actions){return actions.order.create({purchase_units:[{amount:{value:'<?=number_format((float)$order['totali'],2,'.','')?>'}}]});},onApprove:function(data,actions){return actions.order.capture().then(function(details){window.location='paypal_success.php?order_id=<?=$order_id?>&paypal_order_id='+encodeURIComponent(data.orderID);});}}).render('#paypal-button-container');
+</script></body></html>

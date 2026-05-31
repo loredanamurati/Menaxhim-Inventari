@@ -1,0 +1,5 @@
+<?php
+session_start(); require 'config/db.php'; require 'includes/functions.php'; if(empty($_SESSION['user'])) redirect('choose_role.php'); require_login(); $title='Logs';
+try{ $rows=$pdo->query('SELECT * FROM LoginLogs ORDER BY data_login DESC LIMIT 100')->fetchAll(); }catch(Exception $e){$rows=[];} include 'includes/header.php'; ?>
+<section class="page-title-card"><div><span class="eyebrow">Logs</span><h1>Aktivitetet e sistemit</h1></div><a class="btn primary" href="last_logins.php">Logimet</a></section>
+<div class="card"><div class="table-wrap"><table><tr><th>Data</th><th>Roli</th><th>Email</th><th>Status</th></tr><?php foreach($rows as $r): ?><tr><td><?=e($r['data_login'] ?? '')?></td><td><?=e($r['role_type'] ?? '')?></td><td><?=e($r['email'] ?? '')?></td><td><span class="badge ok"><?=e($r['statusi'] ?? 'OK')?></span></td></tr><?php endforeach; if(!$rows): ?><tr><td colspan="4" class="empty-state">Nuk ka logs.</td></tr><?php endif; ?></table></div></div><?php include 'includes/footer.php'; ?>

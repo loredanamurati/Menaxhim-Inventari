@@ -1,0 +1,19 @@
+<?php
+session_start(); require 'config/db.php'; require 'includes/functions.php'; require_login(); ensure_portal_schema($pdo);
+$title='Furnizuesit'; $subtitle='';
+if(isset($_GET['delete'])){ $pdo->prepare('DELETE FROM Furnizuesit WHERE furnizues_id=?')->execute([$_GET['delete']]); redirect('suppliers.php'); }
+if($_SERVER['REQUEST_METHOD']==='POST'){
+    $emri=trim($_POST['emri']??''); $person=trim($_POST['person_kontakti']??''); $tel=trim($_POST['telefoni']??''); $email=trim($_POST['email']??''); $adresa=trim($_POST['adresa']??''); $qyteti=trim($_POST['qyteti']??''); $pass=trim($_POST['password']??'12345');
+    if(!valid_email($email)) redirect('suppliers.php?error=email');
+    if(!empty($_POST['furnizues_id'])){
+        $pdo->prepare('UPDATE Furnizuesit SET emri=?,person_kontakti=?,telefoni=?,email=?,adresa=?,qyteti=?,password=? WHERE furnizues_id=?')->execute([$emri,$person,$tel,$email,$adresa,$qyteti,$pass,$_POST['furnizues_id']]);
+    } else {
+        $pdo->prepare('INSERT INTO Furnizuesit(emri,person_kontakti,telefoni,email,adresa,qyteti,password) VALUES(?,?,?,?,?,?,?)')->execute([$emri,$person,$tel,$email,$adresa,$qyteti,$pass]);
+    }
+    redirect('suppliers.php');
+}
+$edit=null; if(isset($_GET['edit'])){ $st=$pdo->prepare('SELECT * FROM Furnizuesit WHERE furnizues_id=?'); $st->execute([$_GET['edit']]); $edit=$st->fetch(); }
+$rows=$pdo->query('SELECT f.*, COUNT(p.produkt_id) produkte FROM Furnizuesit f LEFT JOIN Produktet p ON p.furnizues_id=f.furnizues_id GROUP BY f.furnizues_id ORDER BY f.emri')->fetchAll();
+include 'includes/header.php'; ?>
+<?php if(isset($_GET['error'])):?><div class="alert error">Vendos një adresë emaili të vlefshme.</div><?php endif;?>
+<div class="section"><div class="card"><h2>Lista e furnizuesve</h2><div class="table-wrap"><table><tr><th>Emri</th><th>Kontakt</th><th>Telefon</th><th>Email</th><th>Password</th><th>Qyteti</th><th>Produkte</th><th>Veprime</th></tr><?php foreach($rows as $r): ?><tr><td><b><?=e($r['emri'])?></b></td><td><?=e($r['person_kontakti'])?></td><td><?=e($r['telefoni'])?></td><td><?=e($r['email'])?></td><td><button type="button" class="pass-chip reveal-pass-btn" data-password="<?=e($r['password'])?>">Shfaq password</button><span class="revealed-pass"></span></td><td><?=e($r['qyteti'])?></td><td><?=e($r['produkte'])?></td><td class="actions"><a class="btn gray" href="suppliers.php?edit=<?=$r['furnizues_id']?>">Edit</a><a class="btn danger" data-confirm="Ta fshij furnizuesin?" href="suppliers.php?delete=<?=$r['furnizues_id']?>">Fshi</a></td></tr><?php endforeach; ?></table></div></div><div class="card"><h2><?=$edit?'Ndrysho furnizues':'Shto furnizues'?></h2><form method="post"><input type="hidden" name="furnizues_id" value="<?=e($edit['furnizues_id']??'')?>"><label>Emri i kompanisë</label><input class="input" name="emri" value="<?=e($edit['emri']??'')?>" required><br><br><label>Person kontakti</label><input class="input" name="person_kontakti" value="<?=e($edit['person_kontakti']??'')?>"><br><br><label>Telefoni</label><input class="input" name="telefoni" value="<?=e($edit['telefoni']??'')?>"><br><br><label>Email</label><input class="input" name="email" type="email" value="<?=e($edit['email']??'')?>" required><br><br><label>Adresa</label><input class="input" name="adresa" value="<?=e($edit['adresa']??'')?>"><br><br><label>Qyteti</label><input class="input" name="qyteti" value="<?=e($edit['qyteti']??'')?>"><br><br><label>Password</label><div class="password-wrap"><input class="input" id="supplierPassword" name="password" type="password" value="<?=e($edit['password']??'12345')?>" required><button type="button" class="password-toggle" data-target="supplierPassword">Shfaq</button></div><br><button class="btn primary">Ruaj</button></form></div></div><script src="assets/app.js"></script><?php include 'includes/footer.php'; ?>
