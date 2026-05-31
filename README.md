@@ -18,3 +18,6 @@ Sistem për Menaxhimin e Inventarit
 
 ## Përshkrimi
 Ky projekt mundëson menaxhimin e produkteve, kategorive, klientëve, furnitorëve, magazinave, porosive dhe pagesave online përmes PayPal.
+
+## GitHub Project Management
+Ky projekt menaxhohet me GitHub Projects, Issues, Milestones dhe Pull Requests.
